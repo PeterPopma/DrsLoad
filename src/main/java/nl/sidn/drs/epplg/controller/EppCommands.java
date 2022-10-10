@@ -283,24 +283,82 @@ public class EppCommands {
 					"</epp>";
 	}
 
-	public String getHostCreate(String hostname, String ipAdres) { return
+	public String getHostCreate(String hostname, String ipAddress) {
+		return
 		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 		"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
 		"  <command>\n" +
 		"    <create>\n" +
 		"      <host:create xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
 		"        <host:name>" + hostname + "</host:name>\n" +
-		"        <host:addr ip=\"v4\">"+ ipAdres +"</host:addr>\n" +
+		"        <host:addr ip=\"v4\">"+ ipAddress +"</host:addr>\n" +
 		"      </host:create>\n" +
 		"   </create>\n" +
-		"   <clTRID>Host create: ns.nameserver-niet-inzone.net</clTRID>\n" +
+		"   <clTRID>Host create: " + hostname + "</clTRID>\n" +
 		"  </command>\n" +
 		"</epp>\n";
 	}
 
-	public String getHostInfo(String hostname, String ipAdres) { return ""; }
+	public String getHostInfo(String hostname) {
+		return
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+						"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
+						"  <command>\n" +
+						"    <info>\n" +
+						"      <host:info xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
+						"        <host:name>" + hostname + "</host:name>\n" +
+						"      </host:info>\n" +
+						"   </info>\n" +
+						"   <clTRID>Host info: " + hostname + "</clTRID>\n" +
+						"  </command>\n" +
+						"</epp>\n";
+	}
 
-	public String getHostDelete(String hostname, String ipAdres) { return ""; }
+	public String getHostUpdate(String hostname, String ipAddressAdd, String ipAddressRemove, String hostNameNew ) {
+		String command = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+				"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
+				"  <command>\n" +
+				"    <update>\n" +
+				"      <host:update xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
+				"        <host:name>" + hostname + "</host:name>\n";
+		if (ipAddressAdd!=null && !ipAddressAdd.isEmpty()) {
+			command += "        <host:add>\n" +
+					"          <host:addr ip=\"v4\">"+ ipAddressAdd +"</host:addr>\n" +
+					"        </host:add>\n";
+		}
+		if (ipAddressRemove!=null && !ipAddressRemove.isEmpty()) {
+			command += "        <host:rem>\n" +
+					"          <host:addr ip=\"v4\">"+ ipAddressRemove +"</host:addr>\n" +
+					"        </host:rem>\n";
+		}
+		if (hostNameNew!=null && !hostNameNew.isEmpty()) {
+			command += "        <host:chg>\n" +
+					"          <<host:name>"+ hostNameNew +"</host:name>\n" +
+					"        </host:chg>\n";
+		}
+		command += "      </host:update>\n" +
+				"   </update>\n" +
+				"   <clTRID>Host create: " + hostname + "</clTRID>\n" +
+				"  </command>\n" +
+				"</epp>\n";
+
+		return command;
+	}
+
+	public String getHostDelete(String hostname) {
+		return
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+						"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
+						"  <command>\n" +
+						"    <delete>\n" +
+						"      <host:delete xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
+						"        <host:name>" + hostname + "</host:name>\n" +
+						"      </host:delete>\n" +
+						"   </delete>\n" +
+						"   <clTRID>Host delete: " + hostname + "</clTRID>\n" +
+						"  </command>\n" +
+						"</epp>\n";
+	}
 
 	public String getPoll() { return
 		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +

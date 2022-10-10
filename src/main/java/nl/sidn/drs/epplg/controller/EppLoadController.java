@@ -144,19 +144,22 @@ public class EppLoadController {
             commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
             break;
           case "DOMAINRENEW":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getDomainRenew(eppPlaybook.getCommandParameters().getDomainName(), eppPlaybook.getCommandParameters().getRenewPeriod());
             break;
           case "HOSTCREATE":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getHostCreate(eppPlaybook.getCommandParameters().getHostName(), eppPlaybook.getCommandParameters().getIpAddress());
             break;
           case "HOSTINFO":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getHostInfo(eppPlaybook.getCommandParameters().getHostName());
             break;
           case "HOSTUPDATE":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getHostUpdate(eppPlaybook.getCommandParameters().getHostName(), eppPlaybook.getCommandParameters().getIpAddressAdd(), eppPlaybook.getCommandParameters().getIpAddressRemove(), eppPlaybook.getCommandParameters().getHostNameNew());
             break;
           case "HOSTDELETE":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getHostDelete(eppPlaybook.getCommandParameters().getHostName());
+            break;
+          case "POLL":
+            commandString = eppCommands.getPoll();
             break;
         }
         commandString = replacePlusPlusWithNumberValue(dynamicValues, commandString);
@@ -166,13 +169,13 @@ public class EppLoadController {
         if(command.equalsIgnoreCase("DOMAINCREATE"))
         {
           // generatedToken = extractToken(response);
-        }
-        // TODO : parse response to obtain handle
+        }        */
+        // parse response to obtain handle
         if(command.equalsIgnoreCase("CONTACTCREATE"))
         {
-          // generatedToken = extractHandle(response);
+          generatedToken = extractHandle(response);
         }
-        */
+
         log.debug(response);
       }
       int sleep_time =  (60 / eppPlaybook.getCallsPerMinute())  * 1000;
@@ -186,6 +189,12 @@ public class EppLoadController {
     eppConnection.disConnect();
 
     return response;
+  }
+
+  private String extractHandle(String response) {
+    int pp = 0;
+    
+    return "";
   }
 
   @GetMapping(value="/contactcreate")
@@ -243,6 +252,31 @@ public class EppLoadController {
     return eppCommands.getDomainRenew("[commandParameters.domainName]", "[commandParameters.renewPeriod]");
   }
 
+  @GetMapping(value="/hostcreate")
+  public String getHostCreateCommand() {
+    return eppCommands.getHostCreate("[commandParameters.hostName]", "[commandParameters.ipAddress]");
+  }
+
+  @GetMapping(value="/hostinfo")
+  public String getHostInfoCommand() {
+    return eppCommands.getHostInfo("[commandParameters.hostName]");
+  }
+
+  @GetMapping(value="/hostupdate")
+  public String getHostUpdateCommand() {
+    return eppCommands.getHostUpdate("[commandParameters.hostName]", "[commandParameters.ipAddressAdd]", "[commandParameters.ipAddressRemove]", "[commandParameters.hostNameNew]");
+  }
+
+  @GetMapping(value="/hostdelete")
+  public String getHostDeleteCommand() {
+    return eppCommands.getHostDelete("[commandParameters.hostName]");
+  }
+
+  @GetMapping(value="/poll")
+  public String getPollCommand() {
+    return eppCommands.getPoll();
+  }
+
   @GetMapping(value="/")
   public String getAllCommands() {
     return
@@ -250,7 +284,7 @@ public class EppLoadController {
         "\nPOST /execute-epp -> Runs epp playbook (see EppPlaybook below for JSON body)" +
         "\n\n- [name]++1 means a number will be added each iteration (starting from 1) \n- When a contact is created, the generated handle will be used in subsequent calls." +
         "\n- When a domain is created, the generated token will be used in subsequent calls." +
-        "\n\ncommands: \n\nCONTACTCREATE\nCONTACTINFO\nCONTACTUPDATE\nCONTACTDELETE\nDOMAINCREATE\nDOMAININFO\nDOMAINUPDATE\nDOMAINDELETE\nDOMAINCANCELDELETE\nDOMAINTRANSFER\nDOMAINRENEW\nHOSTCREATE\nHOSTINFO\nHOSTUPDATE\nHOSTDELETE\n\n" +
+        "\n\ncommands: \n\nCONTACTCREATE\nCONTACTINFO\nCONTACTUPDATE\nCONTACTDELETE\nDOMAINCREATE\nDOMAININFO\nDOMAINUPDATE\nDOMAINDELETE\nDOMAINCANCELDELETE\nDOMAINTRANSFER\nDOMAINRENEW\nHOSTCREATE\nHOSTINFO\nHOSTUPDATE\nHOSTDELETE\nPOLL\n\n" +
         new EppPlaybook().toString();
   }
 
