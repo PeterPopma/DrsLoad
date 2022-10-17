@@ -19,8 +19,6 @@ import java.util.List;
 @Slf4j
 public class EppLoadController {
   EppCommands eppCommands = new EppCommands();
-  String generatedContactHandle = "";
-  String generatedToken = "";
 
   String eppHost = "localhost";
   int eppPort = 700;
@@ -53,20 +51,12 @@ public class EppLoadController {
     return text;
   }
 
-  private String getContactHandle(EppPlaybook eppPlaybook) {
-    if (generatedContactHandle.isEmpty()) {
-      return eppPlaybook.getCommandParameters().getContactInfo().getHandle();
+  private static String getFirstValueNotEmpty(String value1, String value2) {
+    if (!value1.isEmpty()) {
+      return value1;
     }
 
-    return generatedContactHandle;
-  }
-
-  private String getToken(EppPlaybook eppPlaybook) {
-    if (generatedToken.isEmpty()) {
-      return eppPlaybook.getCommandParameters().getDomainToken();
-    }
-
-    return generatedToken;
+    return value2;
   }
 
   private void validateRequest(EppPlaybook eppPlaybook) {
@@ -90,6 +80,8 @@ public class EppLoadController {
     DynamicValuesWrapper dynamicValues = new DynamicValuesWrapper();
 
     for (int i=0; i<repeatCount; i++) {
+      String generatedContactHandle = "";
+      String generatedToken = "";
       dynamicValues.setIndex(0);
       for (String command : commandList) {
         String commandString = "";
@@ -111,19 +103,20 @@ public class EppLoadController {
                 eppPlaybook.getCommandParameters().getContactInfo().getEmail());
             break;
           case "CONTACTINFO":
-            commandString = eppConnection.readWrite(eppCommands.getContactInfo(getContactHandle(eppPlaybook)));
+            commandString = eppConnection.readWrite(eppCommands.getContactInfo(getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getContactInfo().getHandle())));
             break;
           case "CONTACTDELETE":
-            commandString = eppConnection.readWrite(eppCommands.getContactDelete(getContactHandle(eppPlaybook)));
+            commandString = eppConnection.readWrite(eppCommands.getContactDelete(getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getContactInfo().getHandle())));
+
             break;
           case "DOMAINCREATE":
             commandString = eppCommands.getDomainCreate(
                 eppPlaybook.getCommandParameters().getDomainName(),
                 eppPlaybook.getCommandParameters().getHostName(),
                 eppPlaybook.getCommandParameters().getHostName2(),
-                eppPlaybook.getCommandParameters().getRegistrant(),
-                eppPlaybook.getCommandParameters().getAdminC(),
-                eppPlaybook.getCommandParameters().getTechC());
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getRegistrant()),
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getAdminC()),
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getTechC()));
             break;
           case "DOMAININFO":
             commandString = eppCommands.getDomainInfo(eppPlaybook.getCommandParameters().getDomainName());
@@ -133,15 +126,15 @@ public class EppLoadController {
                 eppPlaybook.getCommandParameters().getDomainName(),
                 eppPlaybook.getCommandParameters().getHostName(),
                 eppPlaybook.getCommandParameters().getHostName2(),
-                eppPlaybook.getCommandParameters().getRegistrant(),
-                eppPlaybook.getCommandParameters().getAdminC(),
-                eppPlaybook.getCommandParameters().getTechC());
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getRegistrant()),
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getAdminC()),
+                getFirstValueNotEmpty(generatedContactHandle, eppPlaybook.getCommandParameters().getTechC()));
             break;
           case "DOMAINDELETE":
             commandString = eppCommands.getDomainDelete(eppPlaybook.getCommandParameters().getDomainName());
             break;
           case "DOMAINTRANSFER":
-            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getToken(eppPlaybook));
+            commandString = eppCommands.getDomainTransfer(eppPlaybook.getCommandParameters().getDomainName(), getFirstValueNotEmpty(generatedToken, eppPlaybook.getCommandParameters().getDomainToken()));
             break;
           case "DOMAINRENEW":
             commandString = eppCommands.getDomainRenew(eppPlaybook.getCommandParameters().getDomainName(), eppPlaybook.getCommandParameters().getRenewPeriod());
@@ -164,16 +157,16 @@ public class EppLoadController {
         }
         commandString = replacePlusPlusWithNumberValue(dynamicValues, commandString);
         response = eppConnection.readWrite(commandString);
-        /*
-        // TODO : parse response to obtain token
+
+        // parse response to obtain token
         if(command.equalsIgnoreCase("DOMAINCREATE"))
         {
-          // generatedToken = extractToken(response);
-        }        */
+          generatedToken = extractHandle(response);
+        }
         // parse response to obtain handle
         if(command.equalsIgnoreCase("CONTACTCREATE"))
         {
-          generatedToken = extractHandle(response);
+          generatedContactHandle = extractHandle(response);
         }
 
         log.debug(response);
@@ -191,10 +184,18 @@ public class EppLoadController {
     return response;
   }
 
+  public static String getTagValue(String xml, String tagName) {
+    String value = "";
+    try {
+      value = xml.split("<"+tagName+">")[1].split("</"+tagName+">")[0];
+    } catch (ArrayIndexOutOfBoundsException e) {
+      log.debug("could not parse XML response.", e);
+    }
+    return value;
+  }
+
   private String extractHandle(String response) {
-    int pp = 0;
-    
-    return "";
+    return getTagValue(response, "contact:id");
   }
 
   @GetMapping(value="/contactcreate")
