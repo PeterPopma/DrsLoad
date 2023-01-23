@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg.controller;
+package nl.sidn.eppload.controller;
 
 import lombok.Getter;
 import lombok.Setter;

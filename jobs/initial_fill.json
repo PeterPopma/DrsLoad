@@ -1,0 +1,7 @@
+{
+    "name": "initial fill",
+	  "hostName": "localhost",
+	  "port": 700,
+	  "runTimeSeconds": 30,
+	  "scenarioNames": [ "domaincreate_peter_0_to_300" ]
+}

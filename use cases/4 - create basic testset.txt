@@ -1,0 +1,9 @@
+[gebruikers en deelnemers worden van te voren aangemaakt, bijv met SQL]
+- Voor alle deelnemers:
+- Maak contactpersoon aan, genaamd "[deelnemer][volgnummer]-adminc"
+- Maak contactpersoon aan, genaamd "[deelnemer][volgnummer]-houder"
+- Maak contactpersoon aan, genaamd "[deelnemer][volgnummer]-techc1"
+- Maak contactpersoon aan, genaamd "[deelnemer][volgnummer]-techc2"
+- Maak domein aan genaamd: "[deelnemer][volgnummer].nl"
+- herhaal x keer
+

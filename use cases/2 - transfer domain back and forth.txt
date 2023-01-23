@@ -1,0 +1,7 @@
+create a new contact
+create a new domain
+log in as a different user
+obtain token from domain
+transfer domain to new user
+log out
+repeat last 4 steps

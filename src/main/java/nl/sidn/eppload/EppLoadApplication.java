@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg;
+package nl.sidn.eppload;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

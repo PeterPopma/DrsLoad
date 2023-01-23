@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg.config;
+package nl.sidn.eppload.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

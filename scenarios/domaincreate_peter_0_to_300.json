@@ -1,0 +1,12 @@
+{
+	  "name": "domaincreate_peter_0_to_300",
+	  "initialLogin": "100034:Geheim_123",
+    "repeatCount": 100,
+	  "callsPerMinute": 120,
+    "commands": [ { "command": "DOMAINCREATE",
+                    "parameters" : {
+                      "domainName" : "peter++0.nl"
+                       }
+                    }
+		]
+}

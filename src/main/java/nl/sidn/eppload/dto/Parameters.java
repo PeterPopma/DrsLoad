@@ -1,11 +1,11 @@
-package nl.sidn.drs.epplg.dto;
+package nl.sidn.eppload.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class CommandParameters {
+public class Parameters {
   private String domainName = "jaap.nl";;
   private String hostName = "ns1.peter.nl";
 

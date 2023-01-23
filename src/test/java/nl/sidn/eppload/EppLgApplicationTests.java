@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg;
+package nl.sidn.eppload;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

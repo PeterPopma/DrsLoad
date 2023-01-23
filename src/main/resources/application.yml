@@ -1,0 +1,8 @@
+server:
+  error:
+    include-message: always
+
+eppload:
+  scenarios:
+    location: C:\Projects\EppLoad\scenarios
+

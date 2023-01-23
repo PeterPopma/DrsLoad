@@ -1,0 +1,2 @@
+voer namens verschillende users een domaininfo uit
+dit beginnend bij 1 user per seconde en elke 10 seconden verdubbelen

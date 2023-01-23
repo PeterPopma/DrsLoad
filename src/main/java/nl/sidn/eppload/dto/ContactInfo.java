@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg.dto;
+package nl.sidn.eppload.dto;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,0 +1,2 @@
+create a contact.
+use the contact's created handle to register a new domain

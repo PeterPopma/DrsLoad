@@ -1,0 +1,4 @@
+[gebruikers en deelnemers worden van te voren aangemaakt, bijv met SQL]
+- voer (4) uit om een production-like aantal domeinen te krijgen.
+- schiet random berichten in, in dezelfde frequentie als in productie
+(dus bijv 5 ContactCreate per min., etc)

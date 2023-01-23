@@ -1,0 +1,5 @@
+{
+	  "runTimeSeconds": -1,
+	  "doubleLoadSeconds": 10,
+	  "scenarioNames": [ "create_domain_and_transfer", "domaininfo_peter_0_to_300" ]
+}

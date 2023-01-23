@@ -1,4 +1,4 @@
-package nl.sidn.drs.epplg.connection;
+package nl.sidn.eppload.connection;
 
 import lombok.extern.slf4j.Slf4j;
 

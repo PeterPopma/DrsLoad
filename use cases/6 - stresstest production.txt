@@ -1,0 +1,5 @@
+[gebruikers en deelnemers worden van te voren aangemaakt, bijv met SQL]
+- voer (4) uit om een production-like aantal domeinen te krijgen.
+- - schiet random berichten in, in dezelfde verhouding als in productie
+(dus bijv 10% ContactCreate, 20% DomainCreate, etc)
+met een frequentie van 0.1 keer productie, verdubbelend elke 10 seconden
