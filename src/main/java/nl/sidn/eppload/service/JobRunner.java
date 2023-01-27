@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +33,7 @@ import java.util.stream.Stream;
 public class JobRunner {
   private final EppExecutorService eppExecutorService;
   EppCommands eppCommands = new EppCommands();
-  List<Job> jobs;
+  List<Job> jobs = new ArrayList<Job>();
 
   @Value("${eppload.scenarios.location}")
   String scenariosLocation;
@@ -45,6 +46,7 @@ public class JobRunner {
     newJob.setTimeStarted(Instant.now());
     newJob.setTimeLastDoubleLoad(Instant.now());
     newJob.setDoubleLoadMultiplier(1);
+    newJob.setScenarios(new ArrayList<>());
 
     for (String scenarioName : newJob.getScenarioNames()) {
       Scenario scenario = null;
@@ -61,7 +63,8 @@ public class JobRunner {
 
       // convert calls per minutes to interval (is easier to use internally)
       scenario.setRunIntervalSeconds(1 / (scenario.getCallsPerMinute() / 60.0f));
-
+      scenario.setTimesRun(1);
+      scenario.setTimeLastRun(Instant.now());
 
       if (scenario.getInitialLogin()!=null) {
         if (!scenario.getInitialLogin().isEmpty()) {
@@ -72,6 +75,8 @@ public class JobRunner {
           newJob.getEppConnection().readWrite(eppCommands.getLogin(userPassword.get(0), userPassword.get(1)));
         }
       }
+
+      newJob.getScenarios().add(scenario);
     }
 
     jobs.add(newJob);
@@ -120,7 +125,7 @@ public class JobRunner {
 
           // Determine if scenario must be run in this second and how many times
           float timeForEachCall = scenario.getRunIntervalSeconds() / job.getDoubleLoadMultiplier();
-          Duration timePassed = Duration.between(Instant.now(), scenario.getTimeLastRun());
+          Duration timePassed = Duration.between(scenario.getTimeLastRun(), Instant.now());
           int callsThisSecond = (int)((timePassed.toNanos()/1_000_000_000)/timeForEachCall);
           scenario.setTimeLastRun(scenario.getTimeLastRun().plusNanos((long)(1_000_000_000 * scenario.getRunIntervalSeconds()/job.getDoubleLoadMultiplier()*callsThisSecond)));
 
