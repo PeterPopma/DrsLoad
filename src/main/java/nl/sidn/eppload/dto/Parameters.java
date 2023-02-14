@@ -38,5 +38,9 @@ public class Parameters {
   private String ipAddressAdd = "62.1.2.4";
   private String ipAddressRemove = "62.1.2.5";
   private String renewPeriod = "3";
+
+  private String loginUser;
+
+  private String loginPassword;
   private ContactInfo contactInfo = new ContactInfo();
 }

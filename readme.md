@@ -21,9 +21,11 @@ Scenario syntax:
 - A value of -1 for "repeatCount" or "runTimeSeconds" means forever.
 - ++[value] means an increasing value, starting at [value] and increased by 1 on each call.
 - ??[value] means an random value, from 0 to [value] (value excluded).
-- if you leave out a domainname, contacthandle or hostname, the last created object from the scenario is used.
+- If you leave out a domainname, contacthandle or hostname in an UPDATE, INFO, DELETE, or TRANSFER, the last created object from the scenario is used.
+You can use that to create a chain like CONTACT: CREATE > INFO > UPDATE > DELETE > INFO
 - When you execute a DOMAININFO command, the token will be used in a subsequent DOMAINTRANSFER call. This can be used to transfer a domain.
-- when a domain is created, the {contactInfo} section provides a new contact that will be used as techc, adminc and registrant
+- When a domain is created, you can specify the techc, adminc, or registrant handle. 
+If you leave out some of this values, the {contactInfo} section will be used to create a new contact and couple it instead.
 
 
 commands: 
@@ -38,6 +40,7 @@ DOMAINUPDATE
 DOMAINDELETE
 DOMAINCANCELDELETE
 DOMAINTRANSFER
+DOMAINTRANSFERQUERY
 DOMAINRENEW
 HOSTCREATE
 HOSTINFO

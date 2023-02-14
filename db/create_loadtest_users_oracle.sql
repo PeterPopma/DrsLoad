@@ -1,5 +1,5 @@
 CREATE OR REPLACE
-PROCEDURE create_loadtest_users
+PROCEDURE drpsys.create_loadtest_users
 AS
  n_counter NUMBER;
 BEGIN
@@ -76,7 +76,7 @@ NULL,
 '+31.621718293',
 NULL,
 'peter.popma@sidn.nl',
-'DRS',
+'epp loadtest',
 '1',
 'N',
 NULL,
@@ -97,7 +97,8 @@ NULL,
 NULL,
 NULL,
 NULL);
-	INSERT
+
+INSERT
 	INTO
 	DRPSYS.DRP_GEBRUIKER (GBR_ID,
 	DNR_ID,
@@ -117,10 +118,10 @@ VALUES (800000 + n_counter,
 800000 + n_counter,
 'epp',
 800000 + n_counter,
-'e1NTSEE1MTJ9eUI4NG5FL2Q2SW9wWEc5NWZZY1p2VENReWE3U3V1Zm9oRGg3c2hDby92RFdDUFJ3U1BMd0V2T3JBaE1EU2M5Y3hyWXRER1VNbVQ3U0twV3lwOHV1UzJJNU56ZGpaREl5',
+'e1NTSEE1MTJ9K3pIWnRXZXA3VEMxQU5YdUxZUWdkaWdFM21vaGttZXRjWTNFS2c2LytpT2x4bExrSkhlbStmekxGbkp1ME44S1Zib2pYZmZBUW9QSDFEeHpLRWRGSnpoa01EWmpOVEZt',
 'J',
 NULL,
-'peter',
+'epp loadtest',
 'N',
 0,
 NULL,
@@ -128,7 +129,21 @@ NULL,
 NULL,
 'J');
 
+INSERT
+	INTO
+	DRPSYS.DRP_GEBRUIKER_GEBRUIKERSROL (GGL_ID,
+	GBR_ID,
+	GRL_ID,
+	USER_ID,
+	VERWIJDEREN_JN)
+VALUES (DRP_GEBRUIKER_GEBRUIKERSRO_SEQ.NEXTVAL,
+800000 + n_counter,
+22,
+'epp loadtest',
+'N');
+
 n_counter := n_counter + 1;
+
 IF
 	n_counter = 1000 THEN
       EXIT;
@@ -140,6 +155,6 @@ END;
 
 DECLARE
 BEGIN
-  create_loadtest_users();
+  drpsys.create_loadtest_users();
 END;
 

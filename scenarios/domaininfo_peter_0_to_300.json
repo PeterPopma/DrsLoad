@@ -1,6 +1,6 @@
 {
 	  "name": "domaininfo_peter_0_to_300",
-	  "initialLogin": "100034:Geheim_123",
+	  "initialLogin": "800000:Secret_123!",
     "repeatCount": -1,
 	  "callsPerMinute": 120,
     "commands": [ { "command": "DOMAININFO",

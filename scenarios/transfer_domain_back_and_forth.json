@@ -1,0 +1,37 @@
+{
+	  "name": "transfer_domain_back_and_forth",
+    "repeatCount": -1,
+	  "callsPerMinute": 60,
+    "commands": [  {
+                      "command": "LOGIN", 
+                        "parameters" : {
+                          "loginUser" : "800000",
+                          "loginPassword" : "Secret_123!", }},
+                    { "command": "DOMAININFO",
+                        "parameters" : {
+                          "domainName" : "peter0.nl"
+                          }
+                    },
+                    { "command": "DOMAINTRANSFER",
+                        "parameters" : {
+                          "domainName" : "peter0.nl"
+                           }
+                   }, {
+                      "command": "LOGOUT" }, {
+                      "command": "LOGIN", 
+                        "parameters" : {
+                          "loginUser" : "800001",
+                          "loginPassword" : "Secret_123!", }},
+                    { "command": "DOMAININFO",
+                        "parameters" : {
+                          "domainName" : "peter0.nl"
+                           }
+                    },
+                    { "command": "DOMAINTRANSFER",
+                        "parameters" : {
+                          "domainName" : "peter0.nl"
+                       }
+                    }, {
+                      "command": "LOGOUT" }, 
+		]
+}

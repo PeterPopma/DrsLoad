@@ -1,0 +1,7 @@
+{
+    "name": "create and transfer 1 domain",
+	  "hostName": "localhost",
+	  "port": 700,
+	  "runTimeSeconds": 5,
+	  "scenarioNames": [ "create_and_transfer_random_domain" ]
+}

@@ -1,0 +1,31 @@
+{
+	  "name": "contact_create_info_update_delete_info",
+	  "initialLogin": "800000:Secret_123!",
+    "repeatCount": -1,
+	  "callsPerMinute": 60,
+    "commands": [  {
+                      "command": "CONTACTCREATE", 
+                        "parameters" : {                      
+                          "contactInfo" : {
+                            "name": "Peter",
+                            "street": "teststraat 12",
+                            "city": "Haren",
+                            "postalcode": "9008SC",
+                            "telephone": "+31.621718293",
+                            "email": "p_popma@hotmail.com"
+                      }} },
+                    { "command": "CONTACTINFO"
+                   }, {
+                      "command": "CONTACTUPDATE", 
+                        "parameters" : {                      
+                          "contactInfo" : {
+                            "street": "testplein 14",
+                            "city": "Arnhem",
+                          "postalcode": "6823LE" }
+                      }},
+                    { "command": "CONTACTDELETE"
+                   },
+                     { "command": "CONTACTINFO"
+                     }
+		]
+}

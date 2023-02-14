@@ -1,5 +1,5 @@
 {
-	  "runTimeSeconds": -1,
+	  "runTimeSeconds": 600,
 	  "doubleLoadSeconds": 10,
-	  "scenarioNames": [ "create_domain_and_transfer", "domaininfo_peter_0_to_300" ]
+	  "scenarioNames": [ "create_domain_and_transfer", "domaininfo_peter_0_to_300", "contact_create_info_update_delete_info", "transfer_domain_back_and_forth" ]
 }

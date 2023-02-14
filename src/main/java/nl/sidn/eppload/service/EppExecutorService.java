@@ -74,7 +74,10 @@ public class EppExecutorService {
 
   @Async
   public CompletableFuture<String> executeScenario(DynamicValuesWrapper dynamicValues, Scenario scenario, EPPConnection eppConnection) {
-    String generatedContactHandle = "";
+    String createdContactHandle = "";
+    String createdDomainName = "";
+    String domainToken = "";
+    String createdHostName = "";
     String response = "";
     dynamicValues.setIndex(0);
 
@@ -90,7 +93,7 @@ public class EppExecutorService {
               command.getParameters().getContactInfo().getEmail());
           break;
         case "CONTACTUPDATE":
-          commandString = eppCommands.getContactUpdate(command.getParameters().getContactInfo().getName(),
+          commandString = eppCommands.getContactUpdate(getFirstValueNotEmpty(command.getParameters().getContactInfo().getName(), createdContactHandle),
               command.getParameters().getContactInfo().getStreet(),
               command.getParameters().getContactInfo().getCity(),
               command.getParameters().getContactInfo().getPostalcode(),
@@ -98,53 +101,58 @@ public class EppExecutorService {
               command.getParameters().getContactInfo().getEmail());
           break;
         case "CONTACTINFO":
-          commandString = eppConnection.readWrite(eppCommands.getContactInfo(getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getContactInfo().getHandle())));
+          commandString = eppConnection.readWrite(eppCommands.getContactInfo(getFirstValueNotEmpty(command.getParameters().getContactInfo().getHandle(), createdContactHandle)));
           break;
         case "CONTACTDELETE":
-          commandString = eppConnection.readWrite(eppCommands.getContactDelete(getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getContactInfo().getHandle())));
+          commandString = eppConnection.readWrite(eppCommands.getContactDelete(getFirstValueNotEmpty(command.getParameters().getContactInfo().getHandle(), createdContactHandle)));
 
           break;
         case "DOMAINCREATE":
+          createdDomainName = command.getParameters().getDomainName();
           commandString = eppCommands.getDomainCreate(
               command.getParameters().getDomainName(),
               command.getParameters().getHostName(),
               command.getParameters().getHostName2(),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getRegistrant()),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getAdminC()),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getTechC()));
+              getFirstValueNotEmpty(command.getParameters().getRegistrant(), createdContactHandle),
+              getFirstValueNotEmpty(command.getParameters().getAdminC(), createdContactHandle),
+              getFirstValueNotEmpty(command.getParameters().getTechC(), createdContactHandle));
           break;
         case "DOMAININFO":
-          commandString = eppCommands.getDomainInfo(command.getParameters().getDomainName());
+          commandString = eppCommands.getDomainInfo(getFirstValueNotEmpty(command.getParameters().getDomainName(), createdDomainName));
           break;
         case "DOMAINUPDATE":
           commandString = eppCommands.getDomainUpdate(
               command.getParameters().getDomainName(),
               command.getParameters().getHostName(),
               command.getParameters().getHostName2(),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getRegistrant()),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getAdminC()),
-              getFirstValueNotEmpty(generatedContactHandle, command.getParameters().getTechC()));
+              getFirstValueNotEmpty(command.getParameters().getRegistrant(), createdContactHandle),
+              getFirstValueNotEmpty(command.getParameters().getAdminC(), createdContactHandle),
+              getFirstValueNotEmpty(command.getParameters().getTechC(), createdContactHandle));
           break;
         case "DOMAINDELETE":
-          commandString = eppCommands.getDomainDelete(command.getParameters().getDomainName());
+          commandString = eppCommands.getDomainDelete(getFirstValueNotEmpty(command.getParameters().getDomainName(), createdDomainName));
           break;
         case "DOMAINTRANSFER":
-          commandString = eppCommands.getDomainTransfer(command.getParameters().getDomainName(), command.getParameters().getDomainToken());
+          commandString = eppCommands.getDomainTransfer(getFirstValueNotEmpty(command.getParameters().getDomainName(), createdDomainName), domainToken);
+          break;
+        case "DOMAINTRANSFERQUERY":
+          commandString = eppCommands.getDomainTransferQuery(getFirstValueNotEmpty(command.getParameters().getDomainName(), createdDomainName));
           break;
         case "DOMAINRENEW":
-          commandString = eppCommands.getDomainRenew(command.getParameters().getDomainName(), command.getParameters().getRenewPeriod());
+          commandString = eppCommands.getDomainRenew(getFirstValueNotEmpty(command.getParameters().getDomainName(), createdDomainName), command.getParameters().getRenewPeriod());
           break;
         case "HOSTCREATE":
+          createdHostName = command.getParameters().getHostName();
           commandString = eppCommands.getHostCreate(command.getParameters().getHostName(), command.getParameters().getIpAddress());
           break;
         case "HOSTINFO":
-          commandString = eppCommands.getHostInfo(command.getParameters().getHostName());
+          commandString = eppCommands.getHostInfo(getFirstValueNotEmpty(command.getParameters().getHostName(), createdHostName));
           break;
         case "HOSTUPDATE":
-          commandString = eppCommands.getHostUpdate(command.getParameters().getHostName(), command.getParameters().getIpAddressAdd(), command.getParameters().getIpAddressRemove(), command.getParameters().getHostNameNew());
+          commandString = eppCommands.getHostUpdate(getFirstValueNotEmpty(command.getParameters().getHostName(), createdHostName), command.getParameters().getIpAddressAdd(), command.getParameters().getIpAddressRemove(), command.getParameters().getHostNameNew());
           break;
         case "HOSTDELETE":
-          commandString = eppCommands.getHostDelete(command.getParameters().getHostName());
+          commandString = eppCommands.getHostDelete(getFirstValueNotEmpty(command.getParameters().getHostName(), createdHostName));
           break;
         case "POLL":
           commandString = eppCommands.getPoll();
@@ -156,7 +164,12 @@ public class EppExecutorService {
 
       // parse response to obtain handle
       if (command.getCommand().equalsIgnoreCase("CONTACTCREATE")) {
-        generatedContactHandle = extractHandle(response);
+        createdContactHandle = extractHandle(response);
+      }
+
+      // parse response to obtain token
+      if (command.getCommand().equalsIgnoreCase("DOMAININFO")) {
+        domainToken = extractToken(response);
       }
 
       log.debug(response);
@@ -178,5 +191,9 @@ public class EppExecutorService {
 
   private String extractHandle(String response) {
     return getTagValue(response, "contact:id");
+  }
+
+  private String extractToken(String response) {
+    return getTagValue(response, "domain:pw");
   }
 }
