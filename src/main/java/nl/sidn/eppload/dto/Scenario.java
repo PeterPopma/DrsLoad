@@ -10,8 +10,8 @@ import java.util.List;
 @Setter
 public class Scenario {
   private String name;
-  private String initialLogin = "300106:Geheim_123";
-  private Integer repeatCount = 100;
+  private String initialLogin;
+  private Integer repeatCount = 1;
   private Integer callsPerMinute = 30;
   private List<Command> commands;
 

@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Parameters {
-  private String domainName = "jaap.nl";;
-  private String hostName = "ns1.peter.nl";
+  private String domainName;
+  private String hostName;
 
   @Override
   public String toString() {
@@ -28,16 +28,16 @@ public class Parameters {
         '}';
   }
 
-  private String hostName2 = "ns2.peter.nl";
-  private String hostNameNew = "ns2.peter.nl";
-  private String domainToken = "jaap.nl";
-  private String registrant = "PET000002-ACONN";
-  private String adminC = "PET000002-ACONN";
-  private String techC = "PET000002-ACONN";
-  private String ipAddress = "62.1.2.3";
-  private String ipAddressAdd = "62.1.2.4";
-  private String ipAddressRemove = "62.1.2.5";
-  private String renewPeriod = "3";
+  private String hostName2;
+  private String hostNameNew;
+  private String domainToken;
+  private String registrant;
+  private String adminC;
+  private String techC;
+  private String ipAddress;
+  private String ipAddressAdd;
+  private String ipAddressRemove;
+  private String renewPeriod;
 
   private String loginUser;
 

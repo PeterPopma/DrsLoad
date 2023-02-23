@@ -1,11 +1,11 @@
 {
-	  "name": "domaincreate_peter_0_to_300",
+	  "name": "domaincreate_100_random",
 	  "initialLogin": "800000:Secret_123!",
     "repeatCount": 100,
 	  "callsPerMinute": 120,
     "commands": [ { "command": "DOMAINCREATE",
                     "parameters" : {
-                      "domainName" : "peter++0.nl", 
+                      "domainName" : "peter??1000000.nl",
                       "contactInfo" : {
                         "name": "Peter",
                         "street": "teststraat 12",

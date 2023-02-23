@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import nl.sidn.eppload.connection.EPPConnection;
 import nl.sidn.eppload.controller.DynamicValuesWrapper;
 import nl.sidn.eppload.controller.EppCommands;
+import nl.sidn.eppload.dto.Command;
 import nl.sidn.eppload.dto.Job;
+import nl.sidn.eppload.dto.Parameters;
 import nl.sidn.eppload.dto.Scenario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -76,10 +78,30 @@ public class JobRunner {
         }
       }
 
+      convertDomainCreates(scenario);
       newJob.getScenarios().add(scenario);
     }
 
     jobs.add(newJob);
+  }
+
+  private void convertDomainCreates(Scenario scenario) {
+    List<Command> convertedCommands = new ArrayList<>();
+    for (Command command : scenario.getCommands() ) {
+      if (command.getCommand().equals("DOMAINCREATE")) {
+        if (command.getParameters().getContactInfo()!=null) {
+          Command extraCommand = new Command();
+          extraCommand.setCommand("CONTACTCREATE");
+          Parameters parameters = new Parameters();
+          parameters.setContactInfo(command.getParameters().getContactInfo());
+          extraCommand.setParameters(parameters);
+          convertedCommands.add(extraCommand);
+        }
+      }
+      convertedCommands.add(command);
+    }
+
+    scenario.setCommands(convertedCommands);
   }
 
   public void removeJob(Job job) {

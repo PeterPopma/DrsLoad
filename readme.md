@@ -5,8 +5,27 @@ Usage:
 
 POST /run-job -> Runs a loadtest (with scenario's in the JSON body)
 POST /stop-job -> Stops a loadtest (with job name in the body)
+GET /[command] -> Show the template for the epp command (CONTACTCREATE, DOMAINDELETE, etc.)
 
-The scenarios are specified as .json files in the "scenarios" folder.
+You specify a job as json. For example:
+
+{
+    "name": "initial fill",
+	  "hostName": "localhost",
+	  "port": 700,
+	  "runTimeSeconds": 30,
+	  "scenarioNames": [ "domaincreate_domain_0_to_300" ]
+}
+
+The scenario's must be specified as JSON and must be put in a filename
+with exactly the same name, appended with ".json" (so in the example "domaincreate_domain_0_to_300.json")
+The location of the scenario files is determined in application.yml:
+
+eppload:
+  scenarios:
+    location: C:\Projects\EppLoad\scenarios
+
+Some example scenarios are specified as .json files in the "scenarios" folder in the source repository.
 The scenarios are run in parallel, but the commands of one scenario are waiting for response before
 executing the next command.
 If you don't specify any scenario's, the job default.json is used (but with hostname and port specified in http POST)

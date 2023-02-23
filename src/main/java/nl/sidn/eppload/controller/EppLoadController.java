@@ -138,13 +138,75 @@ public class EppLoadController {
 
   @GetMapping(value="/")
   public String getAllCommands() {
-    return
-        "GET /[command] -> Show the structure of the EPP command" +
-        "\nPOST /execute-epp -> Runs epp playbook (see EppPlaybook below for JSON body)" +
-        "\n\n- [name]++1 means a number will be added each iteration (starting from 1) \n- When a contact is created, the generated handle will be used in subsequent calls." +
-        "\n- When a domain is created, the generated token will be used in subsequent calls." +
-        "\n\ncommands: \n\nCONTACTCREATE\nCONTACTINFO\nCONTACTUPDATE\nCONTACTDELETE\nDOMAINCREATE\nDOMAININFO\nDOMAINUPDATE\nDOMAINDELETE\nDOMAINCANCELDELETE\nDOMAINTRANSFER\nDOMAINRENEW\nHOSTCREATE\nHOSTINFO\nHOSTUPDATE\nHOSTDELETE\nPOLL\n\n" +
-        new Scenario().toString();
+    return "With this tool you can generate EPP commands.\n" +
+        "It can be used to create testsets, L/P tests, stresstests, etc.\n" +
+        "\n" +
+        "Usage:\n" +
+        "\n" +
+        "POST /run-job -> Runs a loadtest (with scenario's in the JSON body)\n" +
+        "POST /stop-job -> Stops a loadtest (with job name in the body)\n" +
+        "GET /[command] -> Show the template for the epp command (CONTACTCREATE, DOMAINDELETE, etc.)\n" +
+        "\n" +
+        "You specify a job as json. For example:\n" +
+        "\n" +
+        "{\n" +
+        "    \"name\": \"initial fill\",\n" +
+        "\t  \"hostName\": \"localhost\",\n" +
+        "\t  \"port\": 700,\n" +
+        "\t  \"runTimeSeconds\": 30,\n" +
+        "\t  \"scenarioNames\": [ \"domaincreate_domain_0_to_300\" ]\n" +
+        "}\n" +
+        "\n" +
+        "The scenario's must be specified as JSON and must be put in a filename\n" +
+        "with exactly the same name, appended with \".json\" (so in the example \"domaincreate_domain_0_to_300.json\")\n" +
+        "The location of the scenario files is determined in application.yml:\n" +
+        "\n" +
+        "eppload:\n" +
+        "  scenarios:\n" +
+        "    location: C:\\Projects\\EppLoad\\scenarios\n" +
+        "\n" +
+        "Some example scenarios are specified as .json files in the \"scenarios\" folder in the source repository.\n" +
+        "The scenarios are run in parallel, but the commands of one scenario are waiting for response before\n" +
+        "executing the next command.\n" +
+        "If you don't specify any scenario's, the job default.json is used (but with hostname and port specified in http POST)\n" +
+        "\n" +
+        "EPP User accounts:\n" +
+        "The loadtest assumes you have defined the following 1000 EPP-users:\n" +
+        "800000 800001 800002 ... 800999\n" +
+        "All these users will user the password \"Secret_123!\"\n" +
+        "\n" +
+        "Scenario syntax:\n" +
+        "\n" +
+        "- A value of -1 for \"repeatCount\" or \"runTimeSeconds\" means forever.\n" +
+        "- ++[value] means an increasing value, starting at [value] and increased by 1 on each call.\n" +
+        "- ??[value] means an random value, from 0 to [value] (value excluded).\n" +
+        "- If you leave out a domainname, contacthandle or hostname in an UPDATE, INFO, DELETE, or TRANSFER, the last created object from the scenario is used.\n" +
+        "You can use that to create a chain like CONTACT: CREATE > INFO > UPDATE > DELETE > INFO\n" +
+        "- When you execute a DOMAININFO command, the token will be used in a subsequent DOMAINTRANSFER call. This can be used to transfer a domain.\n" +
+        "- When a domain is created, you can specify the techc, adminc, or registrant handle. \n" +
+        "If you leave out some of this values, the {contactInfo} section will be used to create a new contact and couple it instead.\n" +
+        "\n" +
+        "\n" +
+        "commands: \n" +
+        "\n" +
+        "CONTACTCREATE\n" +
+        "CONTACTINFO\n" +
+        "CONTACTUPDATE\n" +
+        "CONTACTDELETE\n" +
+        "DOMAINCREATE\n" +
+        "DOMAININFO\n" +
+        "DOMAINUPDATE\n" +
+        "DOMAINDELETE\n" +
+        "DOMAINCANCELDELETE\n" +
+        "DOMAINTRANSFER\n" +
+        "DOMAINTRANSFERQUERY\n" +
+        "DOMAINRENEW\n" +
+        "HOSTCREATE\n" +
+        "HOSTINFO\n" +
+        "HOSTUPDATE\n" +
+        "HOSTDELETE\n" +
+        "POLL\n" +
+        "\n";
   }
 
 }

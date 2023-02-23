@@ -6,3 +6,8 @@ eppload:
   scenarios:
     location: C:\Projects\EppLoad\scenarios
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
