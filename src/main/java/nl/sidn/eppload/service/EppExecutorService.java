@@ -48,7 +48,7 @@ public class EppExecutorService {
   }
 
   private static String getFirstValueNotEmpty(String value1, String value2) {
-    if (!value1.isEmpty()) {
+    if (value1!=null && !value1.isEmpty()) {
       return value1;
     }
 
