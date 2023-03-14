@@ -1,24 +1,21 @@
-package nl.sidn.eppload.service;
+package com.peterpopma.eppload.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.peterpopma.eppload.connection.EPPConnection;
+import com.peterpopma.eppload.controller.DynamicValuesWrapper;
+import com.peterpopma.eppload.controller.EppCommands;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.sidn.eppload.connection.EPPConnection;
-import nl.sidn.eppload.controller.DynamicValuesWrapper;
-import nl.sidn.eppload.controller.EppCommands;
-import nl.sidn.eppload.dto.Command;
-import nl.sidn.eppload.dto.Job;
-import nl.sidn.eppload.dto.Parameters;
-import nl.sidn.eppload.dto.Scenario;
+import com.peterpopma.eppload.dto.Command;
+import com.peterpopma.eppload.dto.Job;
+import com.peterpopma.eppload.dto.Parameters;
+import com.peterpopma.eppload.dto.Scenario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;

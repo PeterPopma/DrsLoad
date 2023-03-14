@@ -1,4 +1,4 @@
-package nl.sidn.eppload;
+package com.peterpopma.eppload;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

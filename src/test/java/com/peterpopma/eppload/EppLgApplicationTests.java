@@ -1,4 +1,4 @@
-package nl.sidn.eppload;
+package com.peterpopma.eppload;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

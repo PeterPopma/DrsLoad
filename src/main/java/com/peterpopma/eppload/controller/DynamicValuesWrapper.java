@@ -1,4 +1,4 @@
-package nl.sidn.eppload.controller;
+package com.peterpopma.eppload.controller;
 
 import lombok.Getter;
 import lombok.Setter;

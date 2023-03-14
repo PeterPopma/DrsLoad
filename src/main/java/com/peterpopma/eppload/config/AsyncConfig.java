@@ -1,4 +1,4 @@
-package nl.sidn.eppload.config;
+package com.peterpopma.eppload.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

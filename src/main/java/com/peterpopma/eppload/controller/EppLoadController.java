@@ -1,27 +1,14 @@
-package nl.sidn.eppload.controller;
+package com.peterpopma.eppload.controller;
 
 import lombok.RequiredArgsConstructor;
-import nl.sidn.eppload.connection.EPPConnection;
-import nl.sidn.eppload.dto.Job;
-import nl.sidn.eppload.dto.Scenario;
-import nl.sidn.eppload.service.EppExecutorService;
-import nl.sidn.eppload.service.JobRunner;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.peterpopma.eppload.dto.Job;
+import com.peterpopma.eppload.service.JobRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor

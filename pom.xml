@@ -5,16 +5,16 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.0.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>nl.sidn.drs</groupId>
+	<groupId>com.peterpopma</groupId>
 	<artifactId>epp-load</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>epp-load</name>
 	<description>EPP load generator</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>19</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

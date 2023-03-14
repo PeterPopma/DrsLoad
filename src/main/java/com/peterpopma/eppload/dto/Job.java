@@ -1,8 +1,8 @@
-package nl.sidn.eppload.dto;
+package com.peterpopma.eppload.dto;
 
+import com.peterpopma.eppload.connection.EPPConnection;
 import lombok.Getter;
 import lombok.Setter;
-import nl.sidn.eppload.connection.EPPConnection;
 
 import java.time.Instant;
 import java.util.List;

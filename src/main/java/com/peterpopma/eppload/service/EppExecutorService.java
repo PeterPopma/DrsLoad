@@ -1,14 +1,13 @@
-package nl.sidn.eppload.service;
+package com.peterpopma.eppload.service;
 
+import com.peterpopma.eppload.connection.EPPConnection;
+import com.peterpopma.eppload.controller.DynamicValuesWrapper;
+import com.peterpopma.eppload.controller.EppCommands;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.sidn.eppload.connection.EPPConnection;
-import nl.sidn.eppload.controller.DynamicValuesWrapper;
-import nl.sidn.eppload.controller.EppCommands;
-import nl.sidn.eppload.dto.Command;
-import nl.sidn.eppload.dto.Scenario;
+import com.peterpopma.eppload.dto.Command;
+import com.peterpopma.eppload.dto.Scenario;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
