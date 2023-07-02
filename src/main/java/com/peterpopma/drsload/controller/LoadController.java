@@ -1,8 +1,8 @@
-package com.peterpopma.eppload.controller;
+package com.peterpopma.drsload.controller;
 
 import lombok.RequiredArgsConstructor;
-import com.peterpopma.eppload.dto.Job;
-import com.peterpopma.eppload.service.JobRunner;
+import com.peterpopma.drsload.dto.Job;
+import com.peterpopma.drsload.service.JobRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
-public class EppLoadController {
+public class LoadController {
 
   private final JobRunner jobRunner;
   EppCommands eppCommands = new EppCommands();
@@ -43,6 +43,7 @@ public class EppLoadController {
   public void stopJob(@RequestBody Job job) {
     jobRunner.removeJob(job);
   }
+
   @GetMapping(value="/contactcreate")
   public String getContactCreateCommand() {
     return eppCommands.getContactCreate("[commandParameters.contactInfo.name]","[commandParameters.contactInfo.street]", "[commandParameters.contactInfo.city]", "[commandParameters.contactInfo.postalCode]", "[commandParameters.contactInfo.telephone]", "[commandParameters.contactInfo.email]" );

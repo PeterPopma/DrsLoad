@@ -15,6 +15,7 @@ You specify a job as json. For example:
 	  "port": 700,
 	  "runTimeSeconds": 30,
 	  "scenarioNames": [ "domaincreate_domain_0_to_300" ]
+	  "eppMode": true,
 }
 
 The scenario's must be specified as JSON and must be put in a filename
@@ -29,6 +30,10 @@ Some example scenarios are specified as .json files in the "scenarios" folder in
 The scenarios are run in parallel, but the commands of one scenario are waiting for response before
 executing the next command.
 If you don't specify any scenario's, the job default.json is used (but with hostname and port specified in http POST)
+
+eppMode:
+When eppMode is set to false, the load generator will create API calls instead of EPP.
+See api-mapping.xls for what call is create for each command.
 
 EPP User accounts:
 The loadtest assumes you have defined the following 1000 EPP-users:

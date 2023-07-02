@@ -1,4 +1,9 @@
-package com.peterpopma.eppload.controller;
+package com.peterpopma.drsload.controller;
+
+import com.peterpopma.drsload.dto.HostAddr;
+import com.peterpopma.drsload.dto.PeriodObject;
+
+import java.util.List;
 
 public class EppCommands {
 
@@ -137,28 +142,49 @@ public class EppCommands {
 	public String getContactDelete(String contactHandle) { return ""; }
 
 
-	public String getDomainCreate(String domainName, String hostName, String hostName2, String registrant, String adminC, String techC) { return
+	public String getDomainCreate(String domainName, List<String> hosts, String registrant, String adminC, List<String> techCs) {
+		String eppCreateCommand =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"+
 					"<epp xmlns= \"urn:ietf:params:xml:ns:epp-1.0\" xmlns:domain= \"urn:ietf:params:xml:ns:domain-1.0\">\n" +
 					"  <command>\n" +
 					"    <create>\n" +
 					"      <domain:create>\n" +
 					"        <domain:name>"+ domainName +"</domain:name>\n" +
-					"        <!--domain:ns-->\n" +
-					"          <!--domain:hostObj>"+ hostName +"</domain:hostObj-->\n" +
-					"          <!--domain:hostObj>"+ hostName2 +"</domain:hostObj-->\n" +
+					"        <!--domain:ns-->\n";
+		eppCreateCommand += addHosts(hosts);
+		eppCreateCommand +=
 					"        <!--/domain:ns-->\n" +
 					"        <domain:registrant>"+ registrant +"</domain:registrant>\n" +
-					"        <domain:contact type= \"admin \">"+ adminC +"</domain:contact>\n" +
-					"        <domain:contact type= \"tech \">"+ techC +"</domain:contact>\n" +
+					"        <domain:contact type= \"admin \">"+ adminC +"</domain:contact>\n";
+		eppCreateCommand += addTechCs(techCs);
+		eppCreateCommand +=
 					"        <domain:authInfo><domain:pw></domain:pw></domain:authInfo>\n" +
 					"      </domain:create>\n" +
 					"    </create>\n" +
 					"  </command>\n" +
 					"</epp>\n";
+
+		return eppCreateCommand;
 	}
 
-	public String getDomainUpdate(String domainName, String hostname, String hostname2, String registrant, String adminC, String techC) { return
+	private String addTechCs(List<String> techCs) {
+		String techCStatements = "";
+		for (String techC : techCs) {
+			techCStatements = "        <domain:contact type= \"tech \">"+ techC +"</domain:contact>\n";
+		}
+		return techCStatements;
+	}
+
+	private String addHosts(List<String> hosts) {
+		String hostStatements = "";
+		for (String host : hosts) {
+			hostStatements += "          <!--domain:hostObj>" + host + "</domain:hostObj-->\n";
+		}
+		return hostStatements;
+	}
+
+	public String getDomainUpdate(String domainName, List<String> hosts, String registrant, String adminC, List<String> techCs) {
+		String eppUpdateCommand =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 		"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
 		"     <command>\n" +
@@ -166,19 +192,21 @@ public class EppCommands {
 		"         <domain:update xmlns:domain=\"urn:ietf:params:xml:ns:domain-1.0\">\n" +
 		"           <domain:name>"+ domainName +"</domain:name>\n" +
 		"           <domain:add>\n" +
-		"             <domain:ns>\n" +               
-		"               <domain:hostObj>"+ hostname +"</domain:hostObj>\n" +
-		"               <domain:hostObj>"+ hostname2 +"</domain:hostObj>\n" +
-		"             </domain:ns>\n" +
-		"             <domain:contact type=\"tech\">"+ techC +"</domain:contact>\n" +
+		"             <domain:ns>\n";
+		eppUpdateCommand += addHosts(hosts);
+		eppUpdateCommand +=
+		"             </domain:ns>\n";
+		eppUpdateCommand += addTechCs(techCs);
+		eppUpdateCommand +=
 		"             <domain:contact type=\"admin\">"+ adminC +"</domain:contact>\n" +
 		"           </domain:add>\n" +
 		"           <domain:rem>\n" +
 		"             <domain:ns>\n" +
-		"               <domain:hostObj>"+ hostname +"</domain:hostObj>\n" +
-		"               <domain:hostObj>"+ hostname2 +"</domain:hostObj>\n" +
+				// TODO : add all existing hosts and techs to the remove part
+	//	"               <domain:hostObj>"+ hostname +"</domain:hostObj>\n" +
+	//	"               <domain:hostObj>"+ hostname2 +"</domain:hostObj>\n" +
 		"             </domain:ns>\n" +
-		"             <domain:contact type=\"tech\">"+ techC +"</domain:contact>\n" +
+//		"             <domain:contact type=\"tech\">"+ techC +"</domain:contact>\n" +
 		"             <domain:contact type=\"admin\">"+ adminC +"</domain:contact>\n" +
 		"           </domain:rem>\n" +
 		"           <domain:chg>\n" +
@@ -192,6 +220,7 @@ public class EppCommands {
 		"       <clTRID>500100-002</clTRID>\n" +
 		"     </command>\n" +
 		"</epp>\n";
+		return eppUpdateCommand;
 	}
 
 	public String getDomainTransfer(String domainName, String domainToken) { return
@@ -267,7 +296,7 @@ public class EppCommands {
 					"</epp>\n";
 	}
 
-	public String getDomainRenew(String domainName, String renewPeriod) { return
+	public String getDomainRenew(String domainName, PeriodObject renewPeriod) { return
 			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 					"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
 					"   <command>\n" +
@@ -275,7 +304,7 @@ public class EppCommands {
 					"        <domain:renew xmlns:domain=\"urn:ietf:params:xml:ns:domain-1.0\">\n" +
 					"           <domain:name>"+domainName+"</domain:name>\n" +
 					"           <domain:curExpDate>2012-01-01</domain:curExpDate>\n" +
-					"           <domain:period unit=\"y\">"+renewPeriod+"</domain:period>\n" +
+					"           <domain:period unit=\"" + renewPeriod.getUnit() + "\">" + renewPeriod.getValue() + "</domain:period>\n" +
 					"           </domain:renew>\n" +
 					"     </renew>\n" +
 					"     <clTRID>ABC-12345</clTRID>\n" +
@@ -283,20 +312,33 @@ public class EppCommands {
 					"</epp>";
 	}
 
-	public String getHostCreate(String hostname, String ipAddress) {
-		return
+	public String getHostCreate(String hostname, List<HostAddr> ipAddresses) {
+		String hostCreateString =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 		"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
 		"  <command>\n" +
 		"    <create>\n" +
 		"      <host:create xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
-		"        <host:name>" + hostname + "</host:name>\n" +
-		"        <host:addr ip=\"v4\">"+ ipAddress +"</host:addr>\n" +
-		"      </host:create>\n" +
+		"        <host:name>" + hostname + "</host:name>\n";
+
+
+		hostCreateString += addIpAddresses(ipAddresses);
+
+		hostCreateString +=
+				"      </host:create>\n" +
 		"   </create>\n" +
 		"   <clTRID>Host create: " + hostname + "</clTRID>\n" +
 		"  </command>\n" +
 		"</epp>\n";
+		return hostCreateString;
+	}
+
+	private String addIpAddresses(List<HostAddr> ipAddresses) {
+		String addIpStatement = "";
+		for(HostAddr addr : ipAddresses) {
+			addIpStatement += "        <host:addr ip=\"v4\">"+ addr.getIp() +"</host:addr>\n";
+		}
+		return addIpStatement;
 	}
 
 	public String getHostInfo(String hostname) {
@@ -314,23 +356,24 @@ public class EppCommands {
 						"</epp>\n";
 	}
 
-	public String getHostUpdate(String hostname, String ipAddressAdd, String ipAddressRemove, String hostNameNew ) {
+	public String getHostUpdate(String hostname, List<HostAddr> ipAddressesAdd, String hostNameNew ) {
 		String command = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 				"<epp xmlns=\"urn:ietf:params:xml:ns:epp-1.0\">\n" +
 				"  <command>\n" +
 				"    <update>\n" +
 				"      <host:update xmlns:host=\"urn:ietf:params:xml:ns:host-1.0\">\n" +
-				"        <host:name>" + hostname + "</host:name>\n";
-		if (ipAddressAdd!=null && !ipAddressAdd.isEmpty()) {
-			command += "        <host:add>\n" +
-					"          <host:addr ip=\"v4\">"+ ipAddressAdd +"</host:addr>\n" +
-					"        </host:add>\n";
-		}
+				"        <host:name>" + hostname + "</host:name>\n" +
+			 	"        <host:add>\n";
+				command += addIpAddresses(ipAddressesAdd);
+				command += "        </host:add>\n";
+
+				// TODO : add all existing ip adresses to the remove part
+		/*
 		if (ipAddressRemove!=null && !ipAddressRemove.isEmpty()) {
 			command += "        <host:rem>\n" +
 					"          <host:addr ip=\"v4\">"+ ipAddressRemove +"</host:addr>\n" +
 					"        </host:rem>\n";
-		}
+		}*/
 		if (hostNameNew!=null && !hostNameNew.isEmpty()) {
 			command += "        <host:chg>\n" +
 					"          <<host:name>"+ hostNameNew +"</host:name>\n" +

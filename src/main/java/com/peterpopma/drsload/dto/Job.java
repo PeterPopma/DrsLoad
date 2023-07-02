@@ -1,6 +1,6 @@
-package com.peterpopma.eppload.dto;
+package com.peterpopma.drsload.dto;
 
-import com.peterpopma.eppload.connection.EPPConnection;
+import com.peterpopma.drsload.connection.EPPConnection;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,5 +23,7 @@ public class Job {
   Instant timeStarted;
   Instant timeLastDoubleLoad;
 
-  int doubleLoadMultiplier;
+  Integer doubleLoadMultiplier;
+
+  Boolean eppMode;
 }

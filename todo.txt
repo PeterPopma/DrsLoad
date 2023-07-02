@@ -1,4 +1,0 @@
-when the epp sequence is executed in multiple threads,
-the ++ counters must be shared over the threads.
-Also, the result like generated handle must NOT be shared.
-

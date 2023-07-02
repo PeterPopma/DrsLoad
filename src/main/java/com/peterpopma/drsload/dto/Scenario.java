@@ -1,4 +1,4 @@
-package com.peterpopma.eppload.dto;
+package com.peterpopma.drsload.dto;
 
 import lombok.Getter;
 import lombok.Setter;

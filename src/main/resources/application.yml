@@ -4,10 +4,14 @@ server:
 
 eppload:
   scenarios:
-    location: C:\Projects\EppLoad\scenarios
+    location: C:\Projects\DrsLoad\scenarios
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+
+epp:
+  tcp:
+    port: 7000

@@ -1,15 +1,14 @@
-package com.peterpopma.eppload.service;
+package com.peterpopma.drsload.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.peterpopma.eppload.connection.EPPConnection;
-import com.peterpopma.eppload.controller.DynamicValuesWrapper;
-import com.peterpopma.eppload.controller.EppCommands;
+import com.peterpopma.drsload.connection.EPPConnection;
+import com.peterpopma.drsload.controller.DynamicValuesWrapper;
+import com.peterpopma.drsload.controller.EppCommands;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.peterpopma.eppload.dto.Command;
-import com.peterpopma.eppload.dto.Job;
-import com.peterpopma.eppload.dto.Parameters;
-import com.peterpopma.eppload.dto.Scenario;
+import com.peterpopma.drsload.dto.Command;
+import com.peterpopma.drsload.dto.Job;
+import com.peterpopma.drsload.dto.Scenario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class JobRunner {
-  private final EppExecutorService eppExecutorService;
+  private final CommandExecutorService commandExecutorService;
   EppCommands eppCommands = new EppCommands();
   List<Job> jobs = new ArrayList<Job>();
 
@@ -39,9 +38,11 @@ public class JobRunner {
 
   public void addJob(Job newJob) {
 
-    // create connection
-    newJob.setEppConnection(new EPPConnection());
-    newJob.getEppConnection().connect(newJob.getHostName(), newJob.getPort());
+    if (newJob.getEppMode()) {
+      // create connection
+      newJob.setEppConnection(new EPPConnection());
+      newJob.getEppConnection().connect(newJob.getHostName(), newJob.getPort());
+    }
     newJob.setTimeStarted(Instant.now());
     newJob.setTimeLastDoubleLoad(Instant.now());
     newJob.setDoubleLoadMultiplier(1);
@@ -65,13 +66,15 @@ public class JobRunner {
       scenario.setTimesRun(1);
       scenario.setTimeLastRun(Instant.now());
 
-      if (scenario.getInitialLogin()!=null) {
-        if (!scenario.getInitialLogin().isEmpty()) {
-          List<String> userPassword = Stream.of(scenario.getInitialLogin())
-              .map(w -> w.split(":")).flatMap(Arrays::stream)
-              .collect(Collectors.toList());
+      if (newJob.getEppMode()) {
+        if (scenario.getInitialLogin()!=null) {
+          if (!scenario.getInitialLogin().isEmpty()) {
+            List<String> userPassword = Stream.of(scenario.getInitialLogin())
+                .map(w -> w.split(":")).flatMap(Arrays::stream)
+                .collect(Collectors.toList());
 
-          newJob.getEppConnection().readWrite(eppCommands.getLogin(userPassword.get(0), userPassword.get(1)));
+            newJob.getEppConnection().readWrite(eppCommands.getLogin(userPassword.get(0), userPassword.get(1)));
+          }
         }
       }
 
@@ -85,13 +88,11 @@ public class JobRunner {
   private void convertDomainCreates(Scenario scenario) {
     List<Command> convertedCommands = new ArrayList<>();
     for (Command command : scenario.getCommands() ) {
-      if (command.getCommand().equals("DOMAINCREATE")) {
-        if (command.getParameters().getContactInfo()!=null) {
+      if (command.getCommandType().equals("DOMAINCREATE")) {
+        if (command.getContactObject()!=null) {
           Command extraCommand = new Command();
-          extraCommand.setCommand("CONTACTCREATE");
-          Parameters parameters = new Parameters();
-          parameters.setContactInfo(command.getParameters().getContactInfo());
-          extraCommand.setParameters(parameters);
+          extraCommand.setCommandType("CONTACTCREATE");
+          extraCommand.setContactObject(command.getContactObject());
           convertedCommands.add(extraCommand);
         }
       }
@@ -151,7 +152,7 @@ public class JobRunner {
           DynamicValuesWrapper dynamicValues = new DynamicValuesWrapper();
 
           for (int i = 0; i < callsThisSecond; i++) {
-            CompletableFuture<String> cf = eppExecutorService.executeScenario(dynamicValues, scenario, job.getEppConnection());
+            CompletableFuture<String> cf = commandExecutorService.executeScenario(dynamicValues, scenario, job.getEppConnection());
 
             try {
               response = cf.get();

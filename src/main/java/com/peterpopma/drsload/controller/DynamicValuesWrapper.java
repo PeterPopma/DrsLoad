@@ -1,4 +1,4 @@
-package com.peterpopma.eppload.controller;
+package com.peterpopma.drsload.controller;
 
 import lombok.Getter;
 import lombok.Setter;

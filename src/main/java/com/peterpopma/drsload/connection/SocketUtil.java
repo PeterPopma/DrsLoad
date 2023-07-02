@@ -1,6 +1,7 @@
-package com.peterpopma.eppload.connection;
+package com.peterpopma.drsload.connection;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -19,6 +20,8 @@ public class SocketUtil {
 	private DataInputStream in;
 	private DataOutputStream out;
 
+	@Value("epp.tcp.port")
+	private int eppTcpPort;
 
 	public void createSocket(String host, int port, int soTimeout)
 			throws IOException {
@@ -37,7 +40,7 @@ public class SocketUtil {
 	}
 
 	public void createSocket(String host) throws IOException {
-		this.createSocket(host, 700, 0);
+		this.createSocket(host, eppTcpPort, 0);
 	}
 
 	public boolean isSocketConected() {

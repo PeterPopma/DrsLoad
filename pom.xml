@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.peterpopma</groupId>
-	<artifactId>epp-load</artifactId>
+	<artifactId>drs-load</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>epp-load</name>
-	<description>EPP load generator</description>
+	<name>drs-load</name>
+	<description>DRS load generator</description>
 	<properties>
 		<java.version>19</java.version>
 	</properties>

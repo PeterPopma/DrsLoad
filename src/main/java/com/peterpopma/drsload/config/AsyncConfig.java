@@ -1,4 +1,4 @@
-package com.peterpopma.eppload.config;
+package com.peterpopma.drsload.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
