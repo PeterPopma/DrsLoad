@@ -1,5 +1,6 @@
 package com.peterpopma.drsload.dto;
 
-public class UnitObject {
-
+public enum Unit {
+  Y,
+  M
 }

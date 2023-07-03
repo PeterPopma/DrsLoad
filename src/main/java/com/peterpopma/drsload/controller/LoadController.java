@@ -1,5 +1,8 @@
 package com.peterpopma.drsload.controller;
 
+import com.peterpopma.drsload.dto.HostAddr;
+import com.peterpopma.drsload.dto.PeriodObject;
+import com.peterpopma.drsload.dto.Unit;
 import lombok.RequiredArgsConstructor;
 import com.peterpopma.drsload.dto.Job;
 import com.peterpopma.drsload.service.JobRunner;
@@ -9,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
@@ -66,7 +71,7 @@ public class LoadController {
 
   @GetMapping(value="/domaincreate")
   public String getDomainCreateCommand() {
-    return eppCommands.getDomainCreate("[commandParameters.domainName]","[commandParameters.hostName]", "[commandParameters.hostName2]", "[commandParameters.registrant]", "[commandParameters.adminC]", "[commandParameters.techC]" );
+    return eppCommands.getDomainCreate("[commandParameters.domainName]", Arrays.asList("[commandParameters.hostName]"), "[commandParameters.hostName2]", "[commandParameters.registrant]", Arrays.asList("[commandParameters.techC]") );
   }
 
   @GetMapping(value="/domaininfo")
@@ -76,7 +81,7 @@ public class LoadController {
 
   @GetMapping(value="/domainupdate")
   public String getDomainUpdateCommand() {
-    return eppCommands.getDomainUpdate("[commandParameters.domainName]","[commandParameters.hostName]", "[commandParameters.hostName2]", "[commandParameters.registrant]", "[commandParameters.adminC]", "[commandParameters.techC]" );
+    return eppCommands.getDomainUpdate("[commandParameters.domainName]",Arrays.asList("[commandParameters.hostName]"), "[commandParameters.hostName2]", "[commandParameters.registrant]", Arrays.asList("[commandParameters.techC]") );
   }
 
   @GetMapping(value="/domaindelete")
@@ -96,12 +101,12 @@ public class LoadController {
 
   @GetMapping(value="/domainrenew")
   public String getDomainRenewCommand() {
-    return eppCommands.getDomainRenew("[commandParameters.domainName]", "[commandParameters.renewPeriod]");
+    return eppCommands.getDomainRenew("[commandParameters.domainName]", new PeriodObject(Unit.Y, 1) );
   }
 
   @GetMapping(value="/hostcreate")
   public String getHostCreateCommand() {
-    return eppCommands.getHostCreate("[commandParameters.hostName]", "[commandParameters.ipAddress]");
+    return eppCommands.getHostCreate("[commandParameters.hostName]", Arrays.asList(new HostAddr("192.3.2.1", "ns1.peter.nl")));
   }
 
   @GetMapping(value="/hostinfo")
@@ -111,7 +116,7 @@ public class LoadController {
 
   @GetMapping(value="/hostupdate")
   public String getHostUpdateCommand() {
-    return eppCommands.getHostUpdate("[commandParameters.hostName]", "[commandParameters.ipAddressAdd]", "[commandParameters.ipAddressRemove]", "[commandParameters.hostNameNew]");
+    return eppCommands.getHostUpdate("[commandParameters.hostName]", Arrays.asList(new HostAddr("192.3.2.1", "ns1.peter.nl")), "[commandParameters.hostNameNew]");
   }
 
   @GetMapping(value="/hostdelete")
