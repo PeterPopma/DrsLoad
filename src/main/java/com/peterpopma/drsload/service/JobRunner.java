@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.peterpopma.drsload.connection.EPPConnection;
 import com.peterpopma.drsload.controller.DynamicValuesWrapper;
 import com.peterpopma.drsload.controller.EppCommands;
+import com.peterpopma.drsload.dto.epp.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.peterpopma.drsload.dto.Command;
-import com.peterpopma.drsload.dto.Job;
-import com.peterpopma.drsload.dto.Scenario;
+import com.peterpopma.drsload.dto.epp.Command;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.peterpopma.drsload.dto.epp.EppCommand.CONTACTCREATE;
 
 @Slf4j
 @Service
@@ -88,11 +89,9 @@ public class JobRunner {
   private void convertDomainCreates(Scenario scenario) {
     List<Command> convertedCommands = new ArrayList<>();
     for (Command command : scenario.getCommands() ) {
-      if (command.getCommandType().equals("DOMAINCREATE")) {
-        if (command.getContactObject()!=null) {
-          Command extraCommand = new Command();
-          extraCommand.setCommandType("CONTACTCREATE");
-          extraCommand.setContactObject(command.getContactObject());
+      if (command.commandType().equals("DOMAINCREATE")) {
+        if (command.contactObject()!=null) {
+          Command extraCommand = new Command(CONTACTCREATE, command.contactObject(), null, null, null);
           convertedCommands.add(extraCommand);
         }
       }
@@ -151,15 +150,28 @@ public class JobRunner {
 
           DynamicValuesWrapper dynamicValues = new DynamicValuesWrapper();
 
-          for (int i = 0; i < callsThisSecond; i++) {
-            CompletableFuture<String> cf = commandExecutorService.executeScenario(dynamicValues, scenario, job.getEppConnection());
-
-            try {
-              response = cf.get();
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            } catch (ExecutionException e) {
-              e.printStackTrace();
+          if (job.getEppMode()) {
+            for (int i = 0; i < callsThisSecond; i++) {
+              CompletableFuture<String> cf = commandExecutorService.executeScenarioEPP(dynamicValues, scenario, job.getEppConnection());
+              try {
+                response = cf.get();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              } catch (ExecutionException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+          else {
+            for (int i = 0; i < callsThisSecond; i++) {
+              CompletableFuture<Response> cf = commandExecutorService.executeScenarioREST(dynamicValues, scenario);
+              try {
+                response = cf.get().toString();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              } catch (ExecutionException e) {
+                e.printStackTrace();
+              }
             }
           }
         }

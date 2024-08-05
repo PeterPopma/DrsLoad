@@ -1,7 +1,7 @@
 package com.peterpopma.drsload.controller;
 
-import com.peterpopma.drsload.dto.HostAddr;
-import com.peterpopma.drsload.dto.PeriodObject;
+import com.peterpopma.drsload.dto.epp.HostAddr;
+import com.peterpopma.drsload.dto.epp.PeriodObject;
 
 import java.util.List;
 
@@ -304,7 +304,7 @@ public class EppCommands {
 					"        <domain:renew xmlns:domain=\"urn:ietf:params:xml:ns:domain-1.0\">\n" +
 					"           <domain:name>"+domainName+"</domain:name>\n" +
 					"           <domain:curExpDate>2012-01-01</domain:curExpDate>\n" +
-					"           <domain:period unit=\"" + renewPeriod.getUnit() + "\">" + renewPeriod.getValue() + "</domain:period>\n" +
+					"           <domain:period unit=\"" + renewPeriod.unit() + "\">" + renewPeriod.value() + "</domain:period>\n" +
 					"           </domain:renew>\n" +
 					"     </renew>\n" +
 					"     <clTRID>ABC-12345</clTRID>\n" +
@@ -336,7 +336,7 @@ public class EppCommands {
 	private String addIpAddresses(List<HostAddr> ipAddresses) {
 		String addIpStatement = "";
 		for(HostAddr addr : ipAddresses) {
-			addIpStatement += "        <host:addr ip=\"v4\">"+ addr.getIp() +"</host:addr>\n";
+			addIpStatement += "        <host:addr ip=\"v4\">"+ addr.ip() +"</host:addr>\n";
 		}
 		return addIpStatement;
 	}

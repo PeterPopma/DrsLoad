@@ -33,12 +33,12 @@ If you don't specify any scenario's, the job default.json is used (but with host
 
 eppMode:
 When eppMode is set to false, the load generator will create API calls instead of EPP.
-See api-mapping.xls for what call is create for each command.
+See api-mapping.xls for what call is created for each command.
 
 EPP User accounts:
 The loadtest assumes you have defined the following 1000 EPP-users:
 800000 800001 800002 ... 800999
-All these users will user the password "Secret_123!"
+All these users will use the password "Secret_123!"
 
 Scenario syntax:
 

@@ -1,4 +1,5 @@
 server:
+  port: 8066
   error:
     include-message: always
 
@@ -15,3 +16,7 @@ management:
 epp:
   tcp:
     port: 7000
+
+drs:
+  rest:
+    uri: http://localhost:8080

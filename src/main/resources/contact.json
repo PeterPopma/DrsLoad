@@ -1,0 +1,30 @@
+{
+  "id": "sh8013",
+  "postalInfo": {
+    "@type": "loc",
+    "name": "Handige Harry",
+    "org": "De Klusjeman BV",
+    "addr": {
+      "street": [
+        "IJsselkade",
+        "100"
+      ],
+      "city": "Amsterdam",
+      "sp": "Limburg",
+      "pc": "1234AA",
+      "cc": "NL"
+    }
+  },
+  "voice": "+31.612345678",
+  "fax": "+31.204578274",
+  "email": "epptestteam@sidn.nl",
+  "authInfo": {
+    "pw": "2fooBAR"
+  },
+  "disclose": {
+    "@flag": "0",
+    "addr": {
+      "@type": "loc"
+    }
+  }
+}

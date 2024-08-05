@@ -1,10 +1,10 @@
 package com.peterpopma.drsload.controller;
 
-import com.peterpopma.drsload.dto.HostAddr;
-import com.peterpopma.drsload.dto.PeriodObject;
-import com.peterpopma.drsload.dto.Unit;
+import com.peterpopma.drsload.dto.epp.HostAddr;
+import com.peterpopma.drsload.dto.epp.PeriodObject;
+import com.peterpopma.drsload.dto.epp.Unit;
 import lombok.RequiredArgsConstructor;
-import com.peterpopma.drsload.dto.Job;
+import com.peterpopma.drsload.service.Job;
 import com.peterpopma.drsload.service.JobRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

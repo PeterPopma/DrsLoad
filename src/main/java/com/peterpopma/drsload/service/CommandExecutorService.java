@@ -3,29 +3,57 @@ package com.peterpopma.drsload.service;
 import com.peterpopma.drsload.connection.EPPConnection;
 import com.peterpopma.drsload.controller.DynamicValuesWrapper;
 import com.peterpopma.drsload.controller.EppCommands;
+import com.peterpopma.drsload.dto.epp.*;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.peterpopma.drsload.dto.Command;
-import com.peterpopma.drsload.dto.Scenario;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+
+import static com.peterpopma.drsload.dto.epp.EppCommand.CONTACTCREATE;
+import static com.peterpopma.drsload.dto.epp.EppCommand.DOMAININFO;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
+enum EppObjectType {
+  CONTACT,
+  DOMAIN,
+  HOST
+}
 
 @Slf4j
 @Service
 public class CommandExecutorService {
   EppCommands eppCommands = new EppCommands();
-  Random rand = new Random();
+
+  private final RestClient restClient;
 
   private MeterRegistry meterRegistry;
-  private Counter counterCONTACTCREATE, counterCONTACTUPDATE, counterCONTACTINFO, counterCONTACTDELETE;
-  private Counter counterDOMAINCREATE, counterDOMAINUPDATE, counterDOMAININFO, counterDOMAINDELETE, counterDOMAINTRANSFER, counterDOMAINTRANSFERQUERY, counterDOMAINRENEW;
-  private Counter counterHOSTCREATE, counterHOSTUPDATE, counterHOSTINFO, counterHOSTDELETE, counterPOLL, counterEPPRequests;
+  private Counter counterCONTACTCREATE;
+  private Counter counterCONTACTUPDATE;
+  private Counter counterCONTACTINFO;
+  private Counter counterCONTACTDELETE;
+  private Counter counterDOMAINCREATE;
+  private Counter counterDOMAINUPDATE;
+  private Counter counterDOMAININFO;
+  private Counter counterDOMAINDELETE;
+  private Counter counterDOMAINTRANSFER;
+  private Counter counterDOMAINTRANSFERQUERY;
+  private Counter counterDOMAINRENEW;
+  private Counter counterHOSTCREATE;
+  private Counter counterHOSTUPDATE;
+  private Counter counterHOSTINFO;
+  private Counter counterHOSTDELETE;
+  private Counter counterPOLL;
+  private Counter counterRequests;
+
 
   public CommandExecutorService(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
@@ -45,73 +73,16 @@ public class CommandExecutorService {
     counterHOSTINFO = meterRegistry.counter("hostinfo_count");
     counterHOSTDELETE = meterRegistry.counter("hostdelete_count");
     counterPOLL = meterRegistry.counter("poll_count");
-    counterEPPRequests = meterRegistry.counter("epp_requests_count");
+    counterRequests = meterRegistry.counter("requests_count");
+
+    restClient = RestClient.builder()
+            .baseUrl("https://jsonplaceholder.typicode.com")
+            .build();
   }
 
-  private static String getFirstValueNotEmpty(String value1, String value2) {
-    if (value1!=null && !value1.isEmpty()) {
-      return value1;
-    }
-
-    return value2;
-  }
-
-  private static List<String> getFirstValueNotEmpty(List<String> value1, String value2) {
-    if (value1!=null && !value1.isEmpty()) {
-      return value1;
-    }
-
-    List<String> value2List = new ArrayList<>();
-    value2List.add(value2);
-    return value2List;
-  }
-
-  private String replacePlusPlusWithNumberValue(DynamicValuesWrapper dynamicValues, String text) {
-    while(text.contains("++"))
-    {
-      int index_begin = text.indexOf("++") + 2;
-      int index_end = index_begin;
-      while(Character.isDigit(text.charAt(index_end))) {
-        index_end++;
-      }
-
-      int translated_value;
-      if (dynamicValues.getDynamicParameters().size()<=dynamicValues.getIndex()) {
-        // new value
-        translated_value = Integer.valueOf(text.substring(index_begin, index_end));
-        dynamicValues.getDynamicParameters().add(translated_value);
-      } else {
-        // existing value
-        Integer value = dynamicValues.getDynamicParameters().get(dynamicValues.getIndex());
-        value++;
-        dynamicValues.getDynamicParameters().set(dynamicValues.getIndex(), value);
-        translated_value = value;
-      }
-      text = text.substring(0, index_begin-2) + translated_value + text.substring(index_end);
-
-      dynamicValues.setIndex(dynamicValues.getIndex()+1);
-    }
-    return text;
-  }
-
-  private String replaceQuestionMarkQuestionMarkWitRandomValue(String text) {
-    while(text.contains("??"))
-    {
-      int index_begin = text.indexOf("??") + 2;
-      int index_end = index_begin;
-      while(Character.isDigit(text.charAt(index_end))) {
-        index_end++;
-      }
-
-      int random_value = rand.nextInt(Integer.valueOf(text.substring(index_begin, index_end)));
-
-      text = text.substring(0, index_begin-2) + random_value + text.substring(index_end);
-    }
-    return text;
-  }
 
   @Async
-  public CompletableFuture<String> executeScenario(DynamicValuesWrapper dynamicValues, Scenario scenario, EPPConnection eppConnection) {
+  public CompletableFuture<String> executeScenarioEPP(DynamicValuesWrapper dynamicValues, Scenario scenario, EPPConnection eppConnection) {
     String createdContactHandle = "";
     String createdDomainName = "";
     String domainToken = "";
@@ -121,110 +92,113 @@ public class CommandExecutorService {
 
     for (Command command : scenario.getCommands()) {
       String commandString = "";
-      switch (command.getCommandType()) {
-        case "CONTACTCREATE":
+      switch (command.commandType()) {
+        case CONTACTCREATE:
           counterCONTACTCREATE.increment();
-          commandString = eppCommands.getContactCreate(command.getContactObject().getName(),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getStreet().toString(),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getCity(),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getPc(),
-              command.getContactObject().getVoice(),
-              command.getContactObject().getEmail());
+          commandString = eppCommands.getContactCreate(command.contactObject().name(),
+              command.contactObject().postalInfo().get(0).addr().street().toString(),
+              command.contactObject().postalInfo().get(0).addr().city(),
+              command.contactObject().postalInfo().get(0).addr().pc(),
+              command.contactObject().voice(),
+              command.contactObject().email());
           break;
-        case "CONTACTUPDATE":
+        case CONTACTUPDATE:
           counterCONTACTUPDATE.increment();
-          commandString = eppCommands.getContactUpdate(getFirstValueNotEmpty(command.getContactObject().getName(), createdContactHandle),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getStreet().toString(),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getCity(),
-              command.getContactObject().getPostalInfo().get(0).getAddr().getPc(),
-              command.getContactObject().getVoice(),
-              command.getContactObject().getEmail());
+          commandString = eppCommands.getContactUpdate(CommandUtils.getFirstValueNotEmpty(command.contactObject().name(), createdContactHandle),
+              command.contactObject().postalInfo().get(0).addr().street().toString(),
+              command.contactObject().postalInfo().get(0).addr().city(),
+              command.contactObject().postalInfo().get(0).addr().pc(),
+              command.contactObject().voice(),
+              command.contactObject().email());
           break;
-        case "CONTACTINFO":
+        case CONTACTINFO:
           counterCONTACTINFO.increment();
-          commandString = eppConnection.readWrite(eppCommands.getContactInfo(getFirstValueNotEmpty(command.getContactObject().getId(), createdContactHandle)));
+          commandString = eppConnection.readWrite(eppCommands.getContactInfo(CommandUtils.getFirstValueNotEmpty(command.contactObject().id(), createdContactHandle)));
           break;
-        case "CONTACTDELETE":
+        case CONTACTDELETE:
           counterCONTACTDELETE.increment();
-          commandString = eppConnection.readWrite(eppCommands.getContactDelete(getFirstValueNotEmpty(command.getContactObject().getId(), createdContactHandle)));
+          commandString = eppConnection.readWrite(eppCommands.getContactDelete(CommandUtils.getFirstValueNotEmpty(command.contactObject().id(), createdContactHandle)));
           break;
-        case "DOMAINCREATE":
+        case DOMAINCREATE:
           counterDOMAINCREATE.increment();
-          createdDomainName = command.getDomainObject().getId();
+          createdDomainName = command.domainObject().id();
           commandString = eppCommands.getDomainCreate(
-              command.getDomainObject().getId(),
-              command.getDomainObject().getHosts(),
-              getFirstValueNotEmpty(command.getDomainObject().getRegistrant(), createdContactHandle),
-              getFirstValueNotEmpty(command.getDomainObject().getAdminC(), createdContactHandle),
-              getFirstValueNotEmpty(command.getDomainObject().getTechC(), createdContactHandle));
+              command.domainObject().id(),
+              command.domainObject().hosts(),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().registrant(), createdContactHandle),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().adminC(), createdContactHandle),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().techC(), createdContactHandle));
           break;
-        case "DOMAININFO":
+        case DOMAININFO:
           counterDOMAININFO.increment();
-          commandString = eppCommands.getDomainInfo(getFirstValueNotEmpty(command.getDomainObject().getId(), createdDomainName));
+          commandString = eppCommands.getDomainInfo(CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName));
           break;
-        case "DOMAINUPDATE":
+        case DOMAINUPDATE:
           counterDOMAINUPDATE.increment();
           commandString = eppCommands.getDomainUpdate(
-              command.getDomainObject().getId(),
-              command.getDomainObject().getHosts(),
-              getFirstValueNotEmpty(command.getDomainObject().getRegistrant(), createdContactHandle),
-              getFirstValueNotEmpty(command.getDomainObject().getAdminC(), createdContactHandle),
-              getFirstValueNotEmpty(command.getDomainObject().getTechC(), createdContactHandle));
+              command.domainObject().id(),
+              command.domainObject().hosts(),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().registrant(), createdContactHandle),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().adminC(), createdContactHandle),
+                  CommandUtils.getFirstValueNotEmpty(command.domainObject().techC(), createdContactHandle));
           break;
-        case "DOMAINDELETE":
+        case DOMAINDELETE:
           counterDOMAINDELETE.increment();
-          commandString = eppCommands.getDomainDelete(getFirstValueNotEmpty(command.getDomainObject().getId(), createdDomainName));
+          commandString = eppCommands.getDomainDelete(CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName));
           break;
-        case "DOMAINTRANSFER":
+        case DOMAINTRANSFER:
           counterDOMAINTRANSFER.increment();
-          commandString = eppCommands.getDomainTransfer(getFirstValueNotEmpty(command.getDomainObject().getId(), createdDomainName), domainToken);
+          commandString = eppCommands.getDomainTransfer(CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName), domainToken);
           break;
-        case "DOMAINTRANSFERQUERY":
+        case DOMAINTRANSFERQUERY:
           counterDOMAINTRANSFERQUERY.increment();
-          commandString = eppCommands.getDomainTransferQuery(getFirstValueNotEmpty(command.getDomainObject().getId(), createdDomainName));
+          commandString = eppCommands.getDomainTransferQuery(CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName));
           break;
-        case "DOMAINRENEW":
+        case DOMAINRENEW:
           counterDOMAINRENEW.increment();
-          commandString = eppCommands.getDomainRenew(getFirstValueNotEmpty(command.getDomainObject().getId(), createdDomainName), command.getDomainObject().getPeriod());
+          commandString = eppCommands.getDomainRenew(CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName), command.domainObject().period());
           break;
-        case "HOSTCREATE":
+        case HOSTCREATE:
           counterHOSTCREATE.increment();
-          createdHostName = command.getHostObject().getName();
-          commandString = eppCommands.getHostCreate(command.getHostObject().getName(), command.getHostObject().getAddr());
+          createdHostName = command.hostObject().name();
+          commandString = eppCommands.getHostCreate(command.hostObject().name(), command.hostObject().addr());
           break;
-        case "HOSTINFO":
+        case HOSTINFO:
           counterHOSTINFO.increment();
-          commandString = eppCommands.getHostInfo(getFirstValueNotEmpty(command.getHostObject().getName(), createdHostName));
+          commandString = eppCommands.getHostInfo(CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName));
           break;
-        case "HOSTUPDATE":
+        case HOSTUPDATE:
           counterHOSTUPDATE.increment();
-          commandString = eppCommands.getHostUpdate(getFirstValueNotEmpty(command.getHostObject().getName(), createdHostName), command.getHostObject().getAddr(), command.getHostObject().getNewName());
+          commandString = eppCommands.getHostUpdate(CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName), command.hostObject().addr(), command.hostObject().newName());
           break;
-        case "HOSTDELETE":
+        case HOSTDELETE:
           counterHOSTDELETE.increment();
-          commandString = eppCommands.getHostDelete(getFirstValueNotEmpty(command.getHostObject().getName(), createdHostName));
+          commandString = eppCommands.getHostDelete(CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName));
           break;
-        case "POLL":
+        case POLL:
           counterPOLL.increment();
           commandString = eppCommands.getPoll();
           break;
+        default:
+          log.error("encountered unknown command");
+          break;
       }
-      commandString = replacePlusPlusWithNumberValue(dynamicValues, commandString);
-      commandString = replaceQuestionMarkQuestionMarkWitRandomValue(commandString);
-      counterEPPRequests.increment();
+      commandString = CommandUtils.replacePlusPlusWithNumberValue(dynamicValues, commandString);
+      commandString = CommandUtils.replaceQuestionMarkQuestionMarkWitRandomValue(commandString);
+      counterRequests.increment();
       response = eppConnection.readWrite(commandString);
       if (response.equals("error")) {
         log.error("epp I/O error!");
       }
 
       // parse response to obtain handle
-      if (command.getCommandType().equalsIgnoreCase("CONTACTCREATE")) {
-        createdContactHandle = extractHandle(response);
+      if (command.commandType()==CONTACTCREATE) {
+        createdContactHandle = CommandUtils.extractHandle(response);
       }
 
       // parse response to obtain token
-      if (command.getCommandType().equalsIgnoreCase("DOMAININFO")) {
-        domainToken = extractToken(response);
+      if (command.commandType()==DOMAININFO) {
+        domainToken = CommandUtils.extractToken(response);
       }
 
       log.debug(response);
@@ -233,21 +207,187 @@ public class CommandExecutorService {
     return CompletableFuture.completedFuture(response);
   }
 
-  private static String getTagValue(String xml, String tagName) {
-    String value = "";
-    try {
-      value = xml.split("<"+tagName+">")[1].split("</"+tagName+">")[0];
-    } catch (ArrayIndexOutOfBoundsException e) {
-      log.debug("could not parse XML response.", e);
+  @Async
+  public CompletableFuture<Response> executeScenarioREST(DynamicValuesWrapper dynamicValues, Scenario scenario) {
+    Response response = null;
+    String createdContactHandle = "";
+    String createdDomainName = "";
+    String createdHostName = "";
+    String domainToken = "";
+
+    dynamicValues.setIndex(0);
+
+    for (Command command : scenario.getCommands()) {
+      counterRequests.increment();
+      switch (command.commandType()) {
+        case CONTACTCREATE:
+          counterCONTACTCREATE.increment();
+          /*
+          TODO: Create a JSON string directly and pass it in the body. That way we can replace all dynamic values in the string.
+
+          commandString = eppCommands.getContactCreateJSON(command.contactObject().name(),
+                  command.contactObject().postalInfo().get(0).addr().street().toString(),
+                  command.contactObject().postalInfo().get(0).addr().city(),
+                  command.contactObject().postalInfo().get(0).addr().pc(),
+                  command.contactObject().voice(),
+                  command.contactObject().email());
+          commandString = CommandUtils.replacePlusPlusWithNumberValue(dynamicValues, commandString);
+          commandString = CommandUtils.replaceQuestionMarkQuestionMarkWitRandomValue(commandString);
+           */
+
+          ContactAddress addr = new ContactAddress(command.contactObject().postalInfo().get(0).addr().street(),
+                  command.contactObject().postalInfo().get(0).addr().city(),
+                  command.contactObject().postalInfo().get(0).addr().sp(),
+                  command.contactObject().postalInfo().get(0).addr().pc(),
+                  command.contactObject().postalInfo().get(0).addr().cc());
+          ContactPostalInfo contactPostalInfo = new ContactPostalInfo(command.contactObject().name(), null, addr);
+          ContactObject contactObject = new ContactObject(null, command.contactObject().roid(),
+                  command.contactObject().name(), command.contactObject().status(), Collections.singletonList(contactPostalInfo), command.contactObject().voice(), command.contactObject().fax(), command.contactObject().email(), command.contactObject().clID(),
+                  command.contactObject().crID(), command.contactObject().crDate(), command.contactObject().upID(), command.contactObject().upDate(), command.contactObject().trDate(), command.contactObject().authInfo(), command.contactObject().disclose());
+          response = restClient.post().uri("/" + EppObjectType.CONTACT)
+                  .contentType(APPLICATION_JSON)
+                  .body(contactObject)
+                  .retrieve().body(Response.class);
+
+          createdContactHandle = response.resData().contactObject().id();
+          break;
+        case CONTACTUPDATE:
+          counterCONTACTUPDATE.increment();
+          String contactId = CommandUtils.getFirstValueNotEmpty(command.contactObject().id(), createdContactHandle);
+          addr = new ContactAddress(command.contactObject().postalInfo().get(0).addr().street(),
+                  command.contactObject().postalInfo().get(0).addr().city(),
+                  command.contactObject().postalInfo().get(0).addr().sp(),
+                  command.contactObject().postalInfo().get(0).addr().pc(),
+                  command.contactObject().postalInfo().get(0).addr().cc());
+          contactPostalInfo = new ContactPostalInfo(command.contactObject().name(), null, addr);
+          contactObject = new ContactObject(contactId, command.contactObject().roid(),
+                  command.contactObject().name(), command.contactObject().status(), Collections.singletonList(contactPostalInfo), command.contactObject().voice(), command.contactObject().fax(), command.contactObject().email(), command.contactObject().clID(),
+                  command.contactObject().crID(), command.contactObject().crDate(), command.contactObject().upID(), command.contactObject().upDate(), command.contactObject().trDate(), command.contactObject().authInfo(), command.contactObject().disclose());
+
+          response = restClient.put().uri("/" + EppObjectType.CONTACT)
+                  .contentType(APPLICATION_JSON)
+                  .body(contactObject)
+                  .retrieve().body(Response.class);
+          break;
+        case CONTACTINFO:
+          counterCONTACTINFO.increment();
+          contactId = CommandUtils.getFirstValueNotEmpty(command.contactObject().id(), createdContactHandle);
+          response = restClient.get().uri("/" + EppObjectType.CONTACT + "/" + contactId)
+                  .retrieve().body(Response.class);
+          break;
+        case CONTACTDELETE:
+          counterCONTACTDELETE.increment();
+          contactId = CommandUtils.getFirstValueNotEmpty(command.contactObject().id(), createdContactHandle);
+          response = restClient.delete().uri("/" + EppObjectType.CONTACT + "/" + contactId)
+                  .retrieve().body(Response.class);
+          break;
+        case DOMAINCREATE:
+          counterDOMAINCREATE.increment();
+          DomainObject domainObject = getDomainObject(command, null, null);
+          response = restClient.post().uri("/" + EppObjectType.DOMAIN)
+                  .contentType(APPLICATION_JSON)
+                  .body(domainObject)
+                  .retrieve().body(Response.class);
+          createdDomainName = response.resData().domainObject().id();
+          break;
+        case DOMAINUPDATE:
+          counterDOMAINUPDATE.increment();
+          String domainId = CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName);
+          domainObject = getDomainObject(command, domainId, null);
+          response = restClient.put().uri("/" + EppObjectType.DOMAIN)
+                  .contentType(APPLICATION_JSON)
+                  .body(domainObject)
+                  .retrieve().body(Response.class);
+          break;
+        case DOMAININFO:
+          counterDOMAININFO.increment();
+          domainId = CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName);
+          response = restClient.get().uri("/" + EppObjectType.DOMAIN + "/" + domainId)
+                  .retrieve().body(Response.class);
+          // obtain token
+          domainToken = response.resData().domainObject().authInfo().pw();
+          break;
+        case DOMAINDELETE:
+          counterDOMAINDELETE.increment();
+          domainId = CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName);
+          response = restClient.delete().uri("/" + EppObjectType.DOMAIN + "/" + domainId)
+                  .retrieve().body(Response.class);
+          break;
+        case DOMAINTRANSFER:
+          counterDOMAINTRANSFER.increment();
+          domainId = CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName);
+          String token =  CommandUtils.getFirstValueNotEmpty(command.domainObject().authInfo().pw(), domainToken);
+          domainObject = getDomainObject(command, domainId, token);
+          response = restClient.post().uri("/" + EppObjectType.DOMAIN + "/transfer")
+                  .contentType(APPLICATION_JSON)
+                  .body(domainObject)
+                  .retrieve().body(Response.class);
+          break;
+        case DOMAINRENEW:
+          counterDOMAINRENEW.increment();
+          domainId = CommandUtils.getFirstValueNotEmpty(command.domainObject().id(), createdDomainName);
+          domainObject = getDomainObject(command, domainId, null);
+          response = restClient.post().uri("/" + EppObjectType.DOMAIN + "/renew")
+                  .contentType(APPLICATION_JSON)
+                  .body(domainObject)
+                  .retrieve().body(Response.class);
+          break;
+        case HOSTCREATE:
+          counterHOSTCREATE.increment();
+          HostObject hostObject = new HostObject(command.hostObject().roid(), command.hostObject().name(), command.hostObject().newName(), command.hostObject().status(), command.hostObject().addr(),
+                  command.hostObject().clID(), command.hostObject().crID(), command.hostObject().crDate(), command.hostObject().upID(),
+                  command.hostObject().upDate(),command.hostObject().trDate());
+          response = restClient.post().uri("/" + EppObjectType.HOST)
+                  .contentType(APPLICATION_JSON)
+                  .body(hostObject)
+                  .retrieve().body(Response.class);
+          createdHostName = response.resData().hostObject().name();
+          break;
+        case HOSTUPDATE:
+          counterHOSTUPDATE.increment();
+          String hostName = CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName);
+          hostObject = new HostObject(command.hostObject().roid(), hostName, command.hostObject().newName(), command.hostObject().status(), command.hostObject().addr(),
+                  command.hostObject().clID(), command.hostObject().crID(), command.hostObject().crDate(), command.hostObject().upID(),
+                  command.hostObject().upDate(),command.hostObject().trDate());
+          response = restClient.put().uri("/" + EppObjectType.HOST)
+                  .contentType(APPLICATION_JSON)
+                  .body(hostObject)
+                  .retrieve().body(Response.class);
+          break;
+        case HOSTINFO:
+          counterHOSTINFO.increment();
+          hostName = CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName);
+          response = restClient.get().uri("/" + EppObjectType.HOST + "/" + hostName)
+                  .retrieve().body(Response.class);
+          break;
+        case HOSTDELETE:
+          counterHOSTDELETE.increment();
+          hostName = CommandUtils.getFirstValueNotEmpty(command.hostObject().name(), createdHostName);
+          response = restClient.delete().uri("/" + EppObjectType.HOST + "/" + hostName)
+                  .retrieve().body(Response.class);
+          break;
+        case POLL:
+          counterPOLL.increment();
+          response = restClient.get().uri("/poll")
+                  .retrieve().body(Response.class);
+          break;
+        default:
+          log.error("encountered unknown command");
+          break;
+      }
+
+      log.debug(response.toString());
     }
-    return value;
+
+    return CompletableFuture.completedFuture(response);
   }
 
-  private String extractHandle(String response) {
-    return getTagValue(response, "contact:id");
+  private static DomainObject getDomainObject(Command command, String domainId, String pw) {
+    PeriodObject periodObject = new PeriodObject(Unit.Y, 1);
+    return new DomainObject(domainId, command.domainObject().roid(), periodObject, command.domainObject().status(),
+            command.domainObject().registrant(), command.domainObject().adminC(), command.domainObject().techC(),
+            command.domainObject().hosts(), command.domainObject().clID(), command.domainObject().crID(), command.domainObject().crDate(),
+            command.domainObject().upID(), command.domainObject().upDate(), command.domainObject().exDate(), command.domainObject().trDate(), new DomainAuthInfo(pw, null));
   }
 
-  private String extractToken(String response) {
-    return getTagValue(response, "domain:pw");
-  }
 }
